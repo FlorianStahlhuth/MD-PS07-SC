@@ -348,7 +348,7 @@ How do the values computed in the above code chunk compare to the estimates we g
 :::
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 6 Answers"}
--   We observe that the estimate for $\hat{p}$ in the above code chunk is significantly closer to the true population proportion of $p = `r ans$p`$. On the other hand, the value for $\widehat{SE}_{\hat{p}}$ is slightly increased in the above calculation in comparison to the single sample of 50 people.
+-   We observe that the estimate for $\hat{p}$ in the above code chunk is significantly closer to the true population proportion of $p = `r ans$p`$. On the other hand, the value for $\widehat{SE}_{\hat{p}}$ is slightly increased in the above calculation but still very similar to the single sample of 50 people.
 :::
 
 ::: {.callout-note icon="false" title="Problem 7"}
@@ -388,7 +388,12 @@ Visualize the sampling distribution of $\hat{p}$ from your $n = 15$ sampling wit
 ```{r}
 #| label: "fig-n15"
 #| fig-cap: "Simulated sampling distribution of p_hat based on samples of size 15"
-# Type your code and comments inside the code chunk
+ggplot(ques8, aes(x = p_hat)) + 
+  geom_histogram(binwidth = 0.02, color = "black", fill = "purple") +
+  labs(x = "Sampling proportion of divorced respondents", 
+       y = "Count", 
+       title = " Sampling distribution of p_hat based on n = 15") +
+  theme_bw()
 
 ```
 :::
@@ -399,7 +404,9 @@ Calculate the mean of the $n = 15$ sampling distribution, and the standard error
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 10 Answers"}
 ```{r}
-# Type your code and comments inside the code chunk
+ques8 |>
+  summarize(Mean_p_hat = mean(p_hat), 
+            SE_p_hat = sd(p_hat))
 
 ```
 :::
@@ -409,7 +416,7 @@ How does the standard error of the $n = 15$ sampling distribution compare to the
 :::
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 11 Answers"}
--   Delete this and put your text answer here.
+-   The standard error of the $n = 15$ sampling distribution is almost twice the size of the standard error of the $n = 50$ sampling distribution.
 :::
 
 ::: {.callout-note icon="false" title="Problem 12"}
@@ -417,7 +424,7 @@ Explain any observed differences from 11.
 :::
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 12 Answers"}
--   Delete this and put your text answer here.
+-   We observe a larger standard error for the $n = 15$ sampling distribution in comparison to the $n = 50$ sampling distribution since a smaller sample size leads to a higher sampling variation and hence to an increased standard error.
 :::
 
 ::: {.callout-note icon="false" title="Problem 13"}
@@ -426,8 +433,9 @@ Use the `rep_sample_n` function to collect 1000 virtual samples of size $n = 600
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 13 Answers"}
 ```{r}
-# Type your code and comments inside the code chunk
-
+set.seed(84)
+n600_1000rep <- gss_YEAR |>
+  rep_sample_n(size = 600, reps = 1000)
 ```
 :::
 
@@ -437,7 +445,12 @@ Calculate the proportion $\hat{p}$ of people who reported they were `Divorced`fo
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 14 Answers"}
 ```{r}
-# Type your code and comments inside the code chunk
+ques14 <- n600_1000rep |>
+  group_by(replicate) |>
+  summarize(divorce_count = sum(marital == "Divorced"), 
+            n = n()) |>
+  mutate(p_hat = divorce_count / n)
+head(ques14, 6)
 
 ```
 :::
@@ -448,7 +461,9 @@ Calculate the mean of the $n = 600$ sampling distribution, and the standard erro
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 15 Answers"}
 ```{r}
-# Type your code and answers below
+ques14 |>
+  summarize(Mean_p_hat = mean(p_hat), 
+            SE_p_hat = sd(p_hat))
 ```
 :::
 
@@ -457,7 +472,7 @@ Was there more **variability** from sample to sample when we took a sample size 
 :::
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 16 Answers"}
--   Delete this and put your text answer here.
+-   There was less variability from sample to sample when we took a sample size of 600 in comparison to a sample size of 50. This becomes evident in a smaller standard error of `r sd(ques14$p_hat)` for $n = 600$ compared to `r p_hat_sum[2]` for $n = 50$.
 :::
 
 ::: {.callout-note icon="false" title="Problem 17"}
@@ -465,10 +480,15 @@ Which sampling distribution looked more normally distributed (bell shaped and sy
 :::
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 17 Answers"}
--   Delete this and put your text answer here.
+- The sampling distribution for $n = 15$ looks the least normally distributed and the sampling distribution for $n = 600$ looks the most normally distributed. This is due to the Central Limit Theorem, that states that with increasing sample size the sampling distribution converges towards a normal distribution.
 
 ```{r, fig.height = 8}
-# Type your code and comments below
+ggplot(ques14, aes(x = p_hat)) + 
+  geom_histogram(binwidth = 0.02, color = "black", fill = "steelblue") + 
+  theme_bw() + 
+  labs(x = "Sampling proportion of divorced respondents", 
+       y = "Count", 
+       title = "Sampling distribution of p_hat based on n = 600")
 
 ```
 :::
@@ -501,8 +521,19 @@ Following the example from the beginning of the Problem Set (roughly line 138), 
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 18 Answers"}
 ```{r, label = "Test2"}
-# Type your code and comments inside the code chunk
+n15_1rep |>
+  summarize(count_divorce = sum(marital == "Divorced"), 
+            n = n()) |>
+  mutate(p_hat = count_divorce / n, 
+         se_hat = sqrt(p_hat * (1 - p_hat) / n)) -> result_n15_1rep
+result_n15_1rep
 
+n50_1rep |>
+  summarize(count_divorce = sum(marital == "Divorced"), 
+            n = n()) |>
+  mutate(p_hat = count_divorce / n, 
+         se_hat = sqrt(p_hat * (1 - p_hat) / n)) -> result_n50_1rep
+result_n50_1rep
 
 ```
 :::
@@ -522,8 +553,8 @@ Fill in the Markdown table below with all the standard errors you computed for t
 ::: {.callout-important icon="false" collapse="false" title="Problem 19 Answers"}
 | Sample size n | SE via sd of sampling distribution | SE via one sample and formula |
 |------------------|-----------------------------|-------------------------|
-| 15            | x                                  | a                             |
-| 50            | y                                  | b                             |
+| 15            | `r sd(ques8$p_hat)`                                  | `r result_n15_1rep$se_hat`                             |
+| 50            | `r sd(p_hat_n50_1000rep$p_hat)`                                  | `r result_n50_1rep$se_hat`                            |
 
 ```{r, label = "test3"}
 # Your code below
@@ -536,7 +567,7 @@ Based on what you observed for 19, **IF** you collected a single sample from 600
 :::
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 20 Answers"}
--   Delete this and put your text answer here.
+-   If we collected a single sample from 600 respondents, I expect the standard error to be smaller than the one we calculated for $n = 15$. We notice in the formula that $\hat{p}$ will still be close to the true population proportion $p$, i.e. it does not change much compared to $n = 15$, whereas $n$ in the denominator is significantly increased. Hence, the smaller standard error.
 :::
 
 # Turning in Your Work
