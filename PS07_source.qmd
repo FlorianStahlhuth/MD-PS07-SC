@@ -1,6 +1,6 @@
 ---
 title: "Problem Set 07"
-author: "Your Name"
+author: "Florian Stahlhuth"
 date: last-modified
 date-format: "[Last modified on] MMMM DD, YYYY HH:mm:ss zzz"
 format: 
@@ -145,12 +145,12 @@ Be sure to look at the results in the viewer. Remember, you can set the seed to 
 
 ::: {.callout-caution icon="false" title="R Code"}
 ```{r}
-set.seed(0804)
+set.seed(1029)
 n50_1rep <- gss_YEAR |> 
   rep_sample_n(size = 50, reps = 1)
 head(n50_1rep)
 # OR 
-set.seed(0804)
+set.seed(1029)
 n50_sample <- sample(gss_YEAR$marital, size = 50, replace = FALSE)
 head(n50_sample)
 ```
@@ -178,7 +178,7 @@ Ask two of your classmates what their estimate of $\hat{p}$ was. How do the $\ha
 :::
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 1 Answers"}
--   Delete this and put your text answer here.
+-   They are all different but reasonably close to the true population proportion $p = `r ans$p`$.
 :::
 
 ::: {.callout-note icon="false" title="Problem 2"}
@@ -186,7 +186,7 @@ Ask two of your classmates what their estimate of $\hat{p}$ was. How do the $\ha
 :::
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 2 Answers"}
--   Delete this and put your text answer here.
+-   Everyone got a different estimate because the $50$ people samples were obtained using different seeds. Hence, the samples are different and therefore also the estimates.
 :::
 
 ## Estimating $\widehat{SE}$ from a Single Sample
@@ -252,7 +252,7 @@ What is the name of the column that identifies which of the 1000 samples each ro
 :::
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 3 Answers"}
--   Delete this and put your text answer here.
+-   The column `replicate` identifies which of the $1000$ samples each row is from.
 :::
 
 ::: {.callout-note icon="false" title="Problem 4"}
@@ -260,7 +260,7 @@ What is the sample size $n$ for each of the $1000$ samples we took? (i.e. how ma
 :::
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 4 Answers"}
--   Delete this and put your text answer here.
+-   The sample size $n$ for each of the $1000$ samples is $50$ people.
 :::
 
 The following code chunk calculates the sample proportion $\hat{p}$ of people who reported they were divorced for each of the **1000 samples**.
@@ -322,11 +322,13 @@ Based on @fig-n50 and @fig-n50base, what appears to be a very common value of $\
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 5 Answers"}
 ```{r}
-# Type your code and comments below
-
+p_hat_quant <- quantile(p_hat_n50_1000rep$p_hat, c(0.01, 0.99))
+p_hat_sum <- p_hat_n50_1000rep |>
+  summarize(p_hat_mean = mean(p_hat),
+            p_hat_sd = sd(p_hat))
 ```
 
--   Delete this and put your text answer here.
+-   For very uncommon values of $\hat{p}$ we find the 1% of `r p_hat_quant[1]` and the 99% of `r p_hat_quant[2]`. The mean of `r p_hat_sum$p_hat_mean` is a very common value. Moreover, we find the standard deviation to be `r p_hat_sum$p_hat_sd`. 
 :::
 
 ## Mean and Standard Error of the Sampling Distribution of $\hat{p}$ for $n = 50$
@@ -346,7 +348,7 @@ How do the values computed in the above code chunk compare to the estimates we g
 :::
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 6 Answers"}
--   Delete this and put your text answer here.
+-   We observe that the estimate for $\hat{p}$ in the above code chunk is significantly closer to the true population proportion of $p = `r ans$p`$. On the other hand, the value for $\widehat{SE}_{\hat{p}}$ is slightly increased in the above calculation in comparison to the single sample of 50 people.
 :::
 
 ::: {.callout-note icon="false" title="Problem 7"}
@@ -355,7 +357,9 @@ Use the `rep_sample_n` function to collect 1000 virtual samples of size $n = 15$
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 7 Answers"}
 ```{r}
-# Type your code and comments inside the code chunk
+set.seed(910)
+n15_1000rep <- gss_YEAR |> 
+  rep_sample_n(size = 15, reps = 1000)
 
 ```
 :::
@@ -366,7 +370,12 @@ Calculate sample proportion $\hat{p}$ of people who reported they were `Divorced
 
 ::: {.callout-important icon="false" collapse="false" title="Problem 8 Answers"}
 ```{r}
-# Type your code and comments inside the code chunk
+ques8 <- n15_1000rep |>
+  group_by(replicate) |>
+  summarize(divorce_count = sum(marital == "Divorced"), 
+            n = n()) |>
+  mutate(p_hat = divorce_count / n)
+head(ques8, 6)
 
 ```
 :::
